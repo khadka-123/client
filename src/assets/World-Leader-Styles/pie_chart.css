@@ -1,0 +1,26 @@
+.pie-container {
+  background-color: rgba(236, 233, 229, 0.5);
+  padding: 5px;
+  padding-bottom: 15px;
+  border-radius: 12px;
+  box-shadow: 2px 4px 12px rgba(255, 255, 255, 0.1); 
+  width: 400px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.pie-container:hover {
+  transform: scale(1.05); 
+}
+
+.chart-title {
+  font-size: 15px;  
+  font-weight:200;
+  color: #ffcc00;  
+  text-align: center;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+}
+
+canvas {
+  max-width: 100%;
+}

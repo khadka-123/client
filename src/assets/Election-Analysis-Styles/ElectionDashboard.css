@@ -1,0 +1,279 @@
+/* ================================
+   Election Dashboard - Styling
+   ================================ */
+
+/* ================================
+   1. Overall Page Styles
+   ================================ */
+  
+   
+   .dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+    /* background-color: #a6a19a; */
+    /* background-color: #EBE3D5; */
+   
+  }
+
+  /* ================================
+     2. Header Section
+     ================================ */
+
+  .header-container{
+    margin-bottom: 1.5rem;
+    /* background-color: #eae7e3; */
+  }
+  .dashboard-header {
+    background-color: #ffffff;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .dashboard-header .title h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1f2937;
+  }
+  
+  .dashboard-header .title p {
+    font-size: 1rem;
+    color: #4b5563;
+    margin: 0.25rem 0 0;
+  }
+  
+  /* Party Badge (Shows selected party name) */
+  .party-badge {
+    background-color: #2563eb;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  /* -------------------------------
+   Congress Badge with Logo
+--------------------------------- */
+.party-info {
+  display: flex;
+  align-items: center;
+  gap: 12px; 
+}
+
+.party-logo {
+  width: 40px;  
+  height: 40px; 
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+  
+  /* ================================
+     3. Summary Cards
+     ================================ */
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .summary-card {
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    border-left: 4px solid;
+  }
+  
+  .summary-card h3 {
+    font-size: 1rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+  }
+  
+  .summary-card .value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+  }
+  
+  /* Different border colors for each card */
+  .summary-card.tweets {
+    border-color: #2563eb;
+  }
+  
+  .summary-card.likes {
+    border-color: #10b981; 
+  }
+  
+  .summary-card.retweets {
+    border-color: #8b5cf6;
+  }
+  
+  /* ================================
+     4. Section Containers & Chart Area
+     ================================ */
+  .section-container {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    margin-bottom: 1.5rem;
+  }
+  
+  .chart-container_k {
+    height: 300px; 
+  }
+  
+  /* ================================
+     5. Two Column Layout (For Topic & Regional Sentiment)
+     ================================ */
+  .two-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  
+  /* ================================
+     7. Top Performing Tweets (Enhanced UI)
+     ================================ */
+  .top-tweets {
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2); /* Light Gradient */
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .top-tweets h2 {
+    font-size: 1.75rem;
+    color: #333;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  /* Individual Tweet Card */
+  .tweet {
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #1DA1F2; 
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+    margin-bottom: 1rem;
+    transition: transform 0.2s, background-color 0.3s;
+  }
+  
+  .tweet:hover {
+    background-color: #f1f5f9;
+    transform: translateY(-3px);
+  }
+  
+  /* Tweet Text */
+  .tweet-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  
+  /* Tweet Stats (Likes & Retweets) */
+  .tweet-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    color: #666;
+    font-weight: 600;
+  }
+  
+  /* Icons Styling */
+  .tweet-stats i {
+    margin-right: 5px;
+    font-size: 1rem;
+  }
+  
+  /* Like & Retweet Colors */
+  .likes i {
+    color: #e0245e; 
+  }
+  
+  .retweets i {
+    color: #17bf63; 
+  }
+  
+  /* ================================
+     8. Horizontal Metrics Row (Activity & Engagement)
+     ================================ */
+  .metrics-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+  
+  .metrics-row .section-container {
+    flex: 1;
+    min-width: 300px;
+    max-width: 48%;
+  }
+  
+  /* ================================
+     9. Pie Chart Row (Sentiment & New Pie Chart)
+     ================================ */
+  .pie-chart-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  
+  .pie-chart-row .section-container {
+    flex: 1;
+    min-width: 300px;
+    max-width: 48%;
+  }
+
+  /* Responsive Adjustments */
+@media (max-width: 768px) {
+  /* Make summary cards stack in a single column */
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  /* Two-column layout becomes one column */
+  .two-column {
+    grid-template-columns: 1fr;
+  }
+
+  /* Let each section take full width in metrics and pie-chart rows */
+  .metrics-row .section-container,
+  .pie-chart-row .section-container {
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+  /* Optional: If the header looks cramped, stack its elements */
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+
+
+  

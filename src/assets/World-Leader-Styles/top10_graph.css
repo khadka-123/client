@@ -1,0 +1,19 @@
+
+  .chart-section {
+    padding-top: 70px;
+    padding: 50px;
+    height: 600px;
+    max-width: 78%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.7rem;
+    border-radius: 10px;
+
+  }
+  .bar-chart{
+    margin-top:50px;
+    margin-bottom:100px;
+  }
+  
