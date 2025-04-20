@@ -50,7 +50,7 @@ const ElectionDashboard = ({ party }) => {
       try {
         
         const response = await axios.get(
-          `http://localhost:5000/api/election_analysis/${party}`
+          `server-drab-five.vercel.app/api/election_analysis/${party}`
         );
         console.log(response.data);
         // Expecting the backend to return { success: true, data: { election_analysis: [ ... ] } }
