@@ -30,7 +30,7 @@ const activeTab = location.pathname === '/election-analysis' ? 'analysis' : 'pre
 
 
     useEffect(() => {
-        axios.get('server-drab-five.vercel.app/api/leader_analysis?page=1&limit=50')
+        axios.get('https://server-drab-five.vercel.app/api/leader_analysis?page=1&limit=50')
             .then((res) => {
                 console.log("API Response:", res.data);
 
