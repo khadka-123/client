@@ -26,7 +26,7 @@ const App = () => {
   const [aggregatedData, setAggregatedData] = useState(null);
 
   useEffect(() => {
-    fetch('https://server-drab-five.vercel.app/api/election_prediction')
+    fetch('https://server-drab-five.vercel.app/election_prediction')
       .then((res) => res.json())
       .then((data) => setAggregatedData(data))
       .catch((error) => console.error('Error fetching aggregated data:', error));
