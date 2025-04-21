@@ -45,44 +45,38 @@ const ElectionDashboard = ({ party }) => {
     partyMapping[party] || { display: party, logo: "/images/default-logo.png" };
 
   // Fetch tweet data from the backend when the 'party' prop changes
-  const [allTweets, setAllTweets] = useState([]);
-const [filteredTweets, setFilteredTweets] = useState([]);
+ useEffect(() => {
+  const cacheKey = `election_analysis_shared`;
+  const cacheTimeKey = `${cacheKey}_time`;
+  const cacheExpiry = 3 * 60 * 60 * 1000; // 3 hours
+  const now = Date.now();
 
-useEffect(() => {
-  const fetchData = async () => {
-    const cacheKey = `election_analysis_shared`;
-    const cacheTimeKey = `${cacheKey}_time`;
-    const cacheExpiry = 3 * 60 * 60 * 1000; // 3 hours
+  const cachedData = localStorage.getItem(cacheKey);
+  const cachedTime = localStorage.getItem(cacheTimeKey);
 
-    const cachedData = localStorage.getItem(cacheKey);
-    const cachedTime = localStorage.getItem(cacheTimeKey);
-    const now = Date.now();
-
-    if (cachedData && cachedTime && (now - parseInt(cachedTime)) < cacheExpiry) {
-      const tweets = JSON.parse(cachedData);
-      setAllTweets(tweets);
-      console.log('Used cached shared data');
-    } else {
-      try {
-        const response = await axios.get(
-          `https://server-drab-five.vercel.app/election_analysis/${party}` // party doesn't matter
-        );
+  if (cachedData && cachedTime && (now - parseInt(cachedTime)) < cacheExpiry) {
+    const tweets = JSON.parse(cachedData);
+    setTweets(tweets);
+    setLoading(false);
+    console.log('Loaded from cache instantly');
+  } else {
+    setLoading(true); // only show loading if actually fetching
+    axios.get(`https://server-drab-five.vercel.app/election_analysis/${party}`)
+      .then((response) => {
         const tweets = response.data.data.election_analysis;
-        setAllTweets(tweets);
+        setTweets(tweets);
         localStorage.setItem(cacheKey, JSON.stringify(tweets));
         localStorage.setItem(cacheTimeKey, now.toString());
-        console.log('Fetched and cached shared data');
-      } catch (err) {
+        console.log('Fetched and cached');
+      })
+      .catch((err) => {
         setError(err);
-      } finally {
+      })
+      .finally(() => {
         setLoading(false);
-      }
-    }
-  };
-
-  fetchData();
+      });
+  }
 }, []);
-
 
   // if (loading) return <div>Loading dashboard data...</div>;
   // if (error) return <div>Error loading dashboard data: {error.message}</div>;
