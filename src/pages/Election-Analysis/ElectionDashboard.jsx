@@ -47,7 +47,7 @@ const ElectionDashboard = ({ party }) => {
   // Fetch tweet data from the backend when the 'party' prop changes
   useEffect(() => {
   const fetchData = async () => {
-    const cacheKey = 'election_analysis_shared';
+    const cacheKey = `election_analysis_shared`;
     const cacheTimeKey = `${cacheKey}_time`;
     const cacheExpiry = 3 * 60 * 60 * 1000; // 3 hours
 
@@ -55,32 +55,25 @@ const ElectionDashboard = ({ party }) => {
     const cachedTime = localStorage.getItem(cacheTimeKey);
     const now = Date.now();
 
-    const loadAndFilter = (allTweets) => {
-      // Filter tweets based on selected party
-      const filtered = allTweets.filter(tweet => tweet.party === party);
-      setTweets(filtered);
-      setLoading(false);
-    };
-
     if (cachedData && cachedTime && (now - parseInt(cachedTime)) < cacheExpiry) {
       const allTweets = JSON.parse(cachedData);
-      loadAndFilter(allTweets);
+      setTweets(allTweets);
+      setLoading(false);
       console.log('Used shared cached data');
     } else {
       try {
-        // Only fetch once (for any party)
         const response = await axios.get(
-          `https://server-drab-five.vercel.app/election_analysis/${party}` // or just fetch for one fixed party
+          `https://server-drab-five.vercel.app/election_analysis/${party}`
         );
-        const allTweets = response.data.data.election_analysis;
+        const tweets = response.data.data.election_analysis;
 
-        localStorage.setItem(cacheKey, JSON.stringify(allTweets));
+        setTweets(tweets);
+        localStorage.setItem(cacheKey, JSON.stringify(tweets));
         localStorage.setItem(cacheTimeKey, now.toString());
-
-        loadAndFilter(allTweets);
-        console.log('Fetched and cached shared data');
+        console.log('Fetched shared data from server and cached');
       } catch (err) {
         setError(err);
+      } finally {
         setLoading(false);
       }
     }
@@ -88,7 +81,6 @@ const ElectionDashboard = ({ party }) => {
 
   fetchData();
 }, [party]);
-
 
   // if (loading) return <div>Loading dashboard data...</div>;
   // if (error) return <div>Error loading dashboard data: {error.message}</div>;
