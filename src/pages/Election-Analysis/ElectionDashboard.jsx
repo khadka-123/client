@@ -1,3 +1,4 @@
+// Frontend: src/components/ElectionDashboard.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -29,14 +30,9 @@ ChartJS.register(
 );
 
 const ElectionDashboard = ({ party }) => {
-  const [tweets, setTweets] = useState([]);
+  const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const cacheExpiry = 3 * 60 * 60 * 1000;  // 3 hours
-  const cacheKeyBase     = "election_analysis_data";
-  const cacheTimeKeyBase = "election_analysis_time";
-  
 
   // Mapping from backend party value to display values and logos
   const partyMapping = {
@@ -44,163 +40,89 @@ const ElectionDashboard = ({ party }) => {
     INCIndia: { display: "Congress", logo: "/images/congress-logo.png" },
     AamAadmiParty: { display: "AAP", logo: "/images/aap-logo.jpg" },
   };
-
-  // Get the mapped display info for the party
   const partyInfo =
     partyMapping[party] || { display: party, logo: "/images/default-logo.png" };
 
-  // Fetch tweet data from the backend when the 'party' prop changes
-
-useEffect(() => {
-  // build per‐party keys
-  const cacheKey = `${cacheKeyBase}_${party}`;
-  const cacheTimeKey = `${cacheTimeKeyBase}_${party}`;
-  const cachedData = localStorage.getItem(cacheKey);
-  const cachedTime = localStorage.getItem(cacheTimeKey);
-  const now = Date.now();
-
-  if (cachedData && cachedTime && (now - parseInt(cachedTime)) < cacheExpiry) {
-    setTweets(JSON.parse(cachedData));
-    setLoading(false);
-    console.log("Used cached data");
-  } else {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `https://server-drab-five.vercel.app/election_analysis/${party}`
+          `http://localhost:5000/api/election_analysis/${party}`
         );
-        const tweets = response.data.data.election_analysis;
-
-        setTweets(tweets);
-        // cache under the per‑party keys
-        localStorage.setItem(cacheKey, JSON.stringify(tweets));
-        localStorage.setItem(cacheTimeKey, now.toString());
-        console.log("Fetched from server and cached");
+        setDashboardData(response.data.data);
       } catch (err) {
         setError(err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
-  }
-}, [party]);
+  }, [party]);
 
-  // if (loading) return <div>Loading dashboard data...</div>;
-  // if (error) return <div>Error loading dashboard data: {error.message}</div>;
-  // if (!tweets || tweets.length === 0) return <div>No data available</div>;
+  if (loading) return <div>Loading dashboard data...</div>;
+  if (error) return <div>Error loading dashboard data: {error.message}</div>;
+  if (!dashboardData) return <div>No data available</div>;
 
-  // Aggregate metrics from tweets
-  const totalTweets = tweets.length;
-  const totalLikes = tweets.reduce((sum, tweet) => sum + (tweet.likeCount || 0), 0);
-  const totalRetweets = tweets.reduce((sum, tweet) => sum + (tweet.Retweets || 0), 0);
-
-  // Compute sentiment counts (assuming tweet.sentiment exists and is a string)
-  const sentimentCounts = {
-    positive: tweets.filter((tweet) => tweet.sentiment.toLowerCase() === "positive").length,
-    neutral: tweets.filter((tweet) => tweet.sentiment.toLowerCase() === "neutral").length,
-    negative: tweets.filter((tweet) => tweet.sentiment.toLowerCase() === "negative").length,
-  };
-
-  // Compute verification counts based on user_verified
-  let verifiedCount = tweets.filter((tweet) => tweet.user_verified).length;
-  let unverifiedCount = tweets.filter((tweet) => !tweet.user_verified).length;
-  
-  // Simulate verification counts differently per party if verifiedCount is zero
-  let displayedVerifiedCount, displayedUnverifiedCount;
-  if (verifiedCount === 0 && unverifiedCount > 0) {
-    if (party === "INCIndia") {
-      displayedVerifiedCount = unverifiedCount / 4; // ~33%
-    } else if (party === "BJP4India") {
-      displayedVerifiedCount = unverifiedCount / 3; // ~50%
-    } else if (party === "AamAadmiParty") {
-      displayedVerifiedCount = unverifiedCount / 5; // ~25%
-    } else {
-      displayedVerifiedCount = unverifiedCount / 3; // default ratio
-    }
-    displayedUnverifiedCount = unverifiedCount - displayedVerifiedCount;
-  } else {
-    displayedVerifiedCount = verifiedCount;
-    displayedUnverifiedCount = unverifiedCount;
-  }
-
-  // Group tweets by date (using the Datetime field)
-  const groupedByDate = tweets.reduce((acc, tweet) => {
-    const date = new Date(tweet.Datetime).toLocaleDateString();
-    if (!acc[date]) {
-      acc[date] = { date, likes: 0, tweets: 0, retweets: 0 };
-    }
-    acc[date].likes += tweet.likeCount || 0;
-    acc[date].tweets += 1;
-    acc[date].retweets += tweet.Retweets || 0;
-    return acc;
-  }, {});
-  const timeSeriesData = Object.values(groupedByDate);
-
-  // Prepare data for the Sentiment Distribution Pie Chart
-  const sentimentPieData = {
-    labels: ["Positive", "Neutral", "Negative"],
-    datasets: [
-      {
-        data: [sentimentCounts.positive, sentimentCounts.neutral, sentimentCounts.negative],
-        backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
-      },
-    ],
-  };
-
-  // Prepare data for the Verification Distribution Pie Chart
-  const verificationPieData = {
-    labels: ["Verified", "Unverified"],
-    datasets: [
-      {
-        data: [displayedVerifiedCount, displayedUnverifiedCount],
-        backgroundColor: ["#4CAF50", "#F44336"],
-      },
-    ],
-  };
+  const {
+    totalTweets,
+    totalLikes,
+    totalRetweets,
+    sentimentCounts,
+    verificationCounts,
+    timeSeriesData,
+    engagementData,
+    topTweets,
+  } = dashboardData;
 
   const pieOptions = {
     responsive: true,
-    plugins: {
-      legend: { position: "top" },
-      tooltip: { enabled: true },
-    },
+    plugins: { legend: { position: "top" }, tooltip: { enabled: true } },
   };
 
-  // Engagement Metrics: Calculate averages and totals
-  const engagementData = [
-    { metric: "Avg Likes", value: totalTweets > 0 ? (totalLikes / totalTweets).toFixed(2) : 0 },
-    { metric: "Avg Retweets", value: totalTweets > 0 ? (totalRetweets / totalTweets).toFixed(2) : 0 },
-    { metric: "Total Tweets", value: totalTweets },
-  ];
-  const engagementBarData = {
-    labels: engagementData.map((item) => item.metric),
-    datasets: [
-      {
-        label: "Value",
-        data: engagementData.map((item) => item.value),
-        backgroundColor: "#0892D0",
-      },
-    ],
+  const lineChartOptions = {
+    responsive: true,
+    plugins: { legend: { position: "top" }, tooltip: { mode: "index", intersect: false } },
+    scales: { x: { display: true }, y: { display: true, beginAtZero: true } },
   };
 
   const engagementOptions = {
     indexAxis: "y",
     responsive: true,
-    plugins: {
-      legend: { display: false },
-      tooltip: { enabled: true },
-    },
+    plugins: { legend: { display: false }, tooltip: { enabled: true } },
   };
 
-  // Activity Timeline Line Chart data (grouped by date)
+  const sentimentPieData = {
+    labels: ["Positive", "Neutral", "Negative"],
+    datasets: [{
+      data: [sentimentCounts.positive, sentimentCounts.neutral, sentimentCounts.negative],
+      backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
+    }],
+  };
+
+  const verificationPieData = {
+    labels: ["Verified", "Unverified"],
+    datasets: [{
+      data: [verificationCounts.verified, verificationCounts.unverified],
+      backgroundColor: ["#4CAF50", "#F44336"],
+    }],
+  };
+
+  const engagementBarData = {
+    labels: engagementData.map(item => item.metric),
+    datasets: [{
+      label: "Value",
+      data: engagementData.map(item => item.value),
+      backgroundColor: "#0892D0",
+    }],
+  };
+
+  // Restore original activity line colors
   const lineChartData = {
-    labels: timeSeriesData.map((item) => item.date),
+    labels: timeSeriesData.map(item => item.date),
     datasets: [
       {
         label: "Likes",
-        data: timeSeriesData.map((item) => item.likes),
+        data: timeSeriesData.map(item => item.likes),
         borderColor: "#1DA1F2",
         backgroundColor: "#1DA1F2",
         tension: 0.4,
@@ -208,7 +130,7 @@ useEffect(() => {
       },
       {
         label: "Tweets",
-        data: timeSeriesData.map((item) => item.tweets),
+        data: timeSeriesData.map(item => item.tweets),
         borderColor: "#657786",
         backgroundColor: "#657786",
         tension: 0.4,
@@ -216,7 +138,7 @@ useEffect(() => {
       },
       {
         label: "Retweets",
-        data: timeSeriesData.map((item) => item.retweets),
+        data: timeSeriesData.map(item => item.retweets),
         borderColor: "#17BF63",
         backgroundColor: "#17BF63",
         tension: 0.4,
@@ -225,82 +147,44 @@ useEffect(() => {
     ],
   };
 
-  const lineChartOptions = {
-    responsive: true,
-    plugins: {
-      legend: { position: "top" },
-      tooltip: { mode: "index", intersect: false },
-    },
-    scales: {
-      x: { display: true },
-      y: { display: true, beginAtZero: true },
-    },
-  };
-
-  // Top Performing Tweets: Sort by engagement (likeCount + Retweets) descending and take top 5
-  const topTweetsSorted = tweets
-    .sort((a, b) => (b.likeCount + b.Retweets) - (a.likeCount + a.Retweets))
-    .slice(0, 5);
-
   return (
     <div className="dashboard-container">
-      {/* Header Component */}
-
       <div className="header-container">
-      <header className="dashboard-header">
-        <div className="title">
-          <h1>Twitter Analytics Dashboard</h1>
-          <p>
-            Analysis for: <strong>{partyInfo.display}</strong>
-          </p>
-        </div>
-        <div className="party-info">
-          <div className="party-badge">{partyInfo.display}</div>
-          <img src={partyInfo.logo} alt="Party Logo" className="party-logo" />
-        </div>
-      </header>
+        <header className="dashboard-header">
+          <div className="title">
+            <h1>Twitter Analytics Dashboard</h1>
+            <p>Analysis for: <strong>{partyInfo.display}</strong></p>
+          </div>
+          <div className="party-info">
+            <div className="party-badge">{partyInfo.display}</div>
+            <img src={partyInfo.logo} alt="Party Logo" className="party-logo" />
+          </div>
+        </header>
 
-      {/* Summary Cards */}
-      <div className="summary-cards">
-        <div className="summary-card tweets">
-          <h3>Total Tweets</h3>
-          <div className="value">{totalTweets.toLocaleString()}</div>
-        </div>
-        <div className="summary-card likes">
-          <h3>Total Likes</h3>
-          <div className="value">{totalLikes.toLocaleString()}</div>
-        </div>
-        <div className="summary-card retweets">
-          <h3>Total Retweets</h3>
-          <div className="value">{totalRetweets.toLocaleString()}</div>
+        <div className="summary-cards">
+          <div className="summary-card tweets">
+            <h3>Total Tweets</h3>
+            <div className="value">{totalTweets.toLocaleString()}</div>
+          </div>
+          <div className="summary-card likes">
+            <h3>Total Likes</h3>
+            <div className="value">{totalLikes.toLocaleString()}</div>
+          </div>
+          <div className="summary-card retweets">
+            <h3>Total Retweets</h3>
+            <div className="value">{totalRetweets.toLocaleString()}</div>
+          </div>
         </div>
       </div>
-      </div>
 
-      {/* Pie Chart Row: Sentiment Distribution & Verification Distribution */}
-      {/* <div className="pie-chart-row" style={{ display: "flex", justifyContent: "space-around", flexWrap: "wrap" }}>
-        <div className="section-container" style={{ flex: "1", maxWidth: "45%" }}>
+      <div className="pie-chart-row">
+        <div className="section-container">
           <h2>Sentiment Distribution</h2>
           <div className="chart-container_k">
             <Pie data={sentimentPieData} options={pieOptions} />
           </div>
         </div>
-        <div className="section-container" style={{ flex: "1", maxWidth: "45%" }}>
-          <h2>Verification Distribution</h2>
-          <div className="chart-container_k">
-            <Pie data={verificationPieData} options={pieOptions} />
-          </div>
-        </div>
-      </div> */}
-
-      <div className="metrics-row"  >
-        <div className="section-container"style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }} >
-          <h2>Sentiment Distribution</h2>
-          <div className="chart-container_k">
-            <Pie data={sentimentPieData} options={pieOptions} />
-          </div>
-        </div>
-        <div className="section-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <div className="section-container">
           <h2>Verification Distribution</h2>
           <div className="chart-container_k">
             <Pie data={verificationPieData} options={pieOptions} />
@@ -308,7 +192,6 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Activity Timeline & Engagement Metrics */}
       <div className="metrics-row">
         <div className="section-container">
           <h2>Activity Over Time</h2>
@@ -324,11 +207,10 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* Top Performing Tweets */}
       <div className="section-container top-tweets">
         <h2>Top Performing Tweets</h2>
-        {topTweetsSorted.map((tweet, index) => (
-          <div key={index} className="tweet">
+        {topTweets.map((tweet, idx) => (
+          <div key={idx} className="tweet">
             <p className="tweet-text">"{tweet.Text}"</p>
             <div className="tweet-stats">
               <span className="likes">
