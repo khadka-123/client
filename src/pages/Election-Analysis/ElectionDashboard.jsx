@@ -59,7 +59,7 @@ const ElectionDashboard = ({ party }) => {
       const fetchData = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:5000/api/election_analysis/${party}`
+            `https://server-drab-five.vercel.app/election_analysis/${party}`
           );
           const data = response.data.data;
           setDashboardData(data);
