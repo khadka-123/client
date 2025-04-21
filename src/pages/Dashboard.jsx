@@ -1,18 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Menu } from 'lucide-react';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faVoteYea, faGlobe } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
-// import {
-//   LineChart,
-//   Line,
-//   XAxis,
-//   YAxis,
-//   CartesianGrid,
-//   Tooltip,
-//   ResponsiveContainer,
-// } from 'recharts';
 
 // FeatureCard component
 const FeatureCard = ({ title, icon, onClick }) => (
@@ -24,20 +15,10 @@ const FeatureCard = ({ title, icon, onClick }) => (
   </FeatureCardContainer>
 );
 
+// Dashboard component
 const Dashboard = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // const [aggregatedData, setAggregatedData] = useState([]);
   const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   fetch('http://localhost:5000/api/election_prediction')
-  //     .then((res) => res.json())
-  //     .then((data) => setAggregatedData(
-  //       // Expect data as array of objects with Datetime and total_tweets
-  //       Array.isArray(data) ? data : []
-  //     ))
-  //     .catch((error) => console.error('Error fetching aggregated data:', error));
-  // }, []);
 
   const navigateTo = (url) => navigate(url);
 
@@ -68,83 +49,97 @@ const Dashboard = () => {
           <DividerDot />
           <DividerDot />
         </Divider>
-        {/* <TrendingSection>
-          <SectionHeader>
-            <SectionSubtitle>Tweet Volume Over Time</SectionSubtitle>
-          </SectionHeader>
-          <ChartContainer>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={aggregatedData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="Datetime" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="total_tweets" stroke="#8884d8" />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </TrendingSection> */}
       </Main>
     </DashboardContainer>
   );
 };
 
+export default Dashboard;
+
 // Styled components
 const DashboardContainer = styled.div`
-  
   min-height: 100vh;
   background-image: url('/images/bg1.jpg');
   background-size: cover;
+  background-position: center;
   color: white;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 `;
+
 const Header = styled.header`
-  background-color: rgba(55,58,64,0.9);
-  padding: 10px 20px;
+  background-color: rgba(55, 58, 64, 0.9);
+  padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  @media (min-width: 768px) {
+    padding: 1.5rem 2rem;
+  }
 `;
+
 const MenuButton = styled.button`
   color: #9ca3af;
   background: none;
   border: none;
   cursor: pointer;
-  &:hover { color: white; }
-`;
-const Title = styled.h1`
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
-`;
-const Spacer = styled.div`width: 32px;`;
-const Main = styled.main`
-  padding: 16px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  margin-top: 6rem;
-  
-`;
-export const FeatureGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6rem;
-  margin: 0 auto 4rem;
 
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6rem;
+  &:hover {
+    color: white;
   }
 `;
 
-export const FeatureCardContainer = styled.div`
+const Title = styled.h1`
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+
+  @media (min-width: 768px) {
+    font-size: 1.5rem;
+  }
+`;
+
+const Spacer = styled.div`
+  width: 32px;
+`;
+
+const Main = styled.main`
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4rem;
+
+  @media (min-width: 768px) {
+    margin-top: 6rem;
+    padding: 2rem;
+  }
+`;
+
+const FeatureGrid = styled.div`
+  display: grid;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto 4rem;
+  gap: 4rem;
+  grid-template-columns: 1fr;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+    justify-items: center;
+    gap: 4rem;
+  }
+`;
+
+const FeatureCardContainer = styled.div`
   background-color: rgba(55, 58, 64, 0.9);
   border-radius: 8px;
-  padding: 2rem;
-  margin: 10px;
-  height: 100%;
-  width: 600px;
+  padding: 4rem;
+  padding-left: 2rem;
+  width: 100%;
+  max-width: 600px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 
   &:hover {
@@ -154,7 +149,7 @@ export const FeatureCardContainer = styled.div`
   }
 `;
 
-export const FeatureCardContent = styled.div`
+const FeatureCardContent = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -165,28 +160,30 @@ const FeatureTitle = styled.h3`
   font-size: 1.25rem;
   font-weight: 500;
   margin: 0;
+
+  @media (min-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
-const FeatureIcon = styled.div`color: rgb(232,232,232);`;
+
+const FeatureIcon = styled.div`
+  color: rgb(232, 232, 232);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
 const Divider = styled.div`
-  display: flex; align-items: center; justify-content: center; margin: 2rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2rem 0;
 `;
+
 const DividerDot = styled.div`
-  width:6px; height:6px; border-radius:50%; background:white; margin:0 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: white;
+  margin: 0 6px;
 `;
-
-// const TrendingSection = styled.div`
-//   background-color: rgba(55,58,64,0.9);
-//   border-radius:8px; padding:1rem;
-//   width:100%; max-width:1200px;
-// `;
-
-// const SectionHeader = styled.div`
-//   display:flex; align-items:center; margin-bottom:1rem;
-// `;
-// const SectionSubtitle = styled.h3`
-//   font-size:1.25rem; font-weight:500; margin:0;
-// `;
-// const ChartContainer = styled.div`
-//   width:100%; height:300px;
-// `;
-export default Dashboard;
