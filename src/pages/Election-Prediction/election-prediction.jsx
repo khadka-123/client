@@ -25,12 +25,36 @@ const App = () => {
 
   const [aggregatedData, setAggregatedData] = useState(null);
 
-  useEffect(() => {
-    fetch('https://server-drab-five.vercel.app/election_prediction')
-      .then((res) => res.json())
-      .then((data) => setAggregatedData(data))
-      .catch((error) => console.error('Error fetching aggregated data:', error));
-  }, []);
+ useEffect(() => {
+  const fetchData = async () => {
+    const cacheKey = 'election_prediction_data';
+    const cacheTimeKey = `${cacheKey}_time`;
+    const cacheExpiry = 3 * 60 * 60 * 1000; // 3 hours
+
+    const cachedData = localStorage.getItem(cacheKey);
+    const cachedTime = localStorage.getItem(cacheTimeKey);
+    const now = Date.now();
+
+    if (cachedData && cachedTime && (now - parseInt(cachedTime)) < cacheExpiry) {
+      setAggregatedData(JSON.parse(cachedData));
+      console.log('Used cached aggregated data');
+    } else {
+      try {
+        const res = await fetch('https://server-drab-five.vercel.app/election_prediction');
+        const data = await res.json();
+        setAggregatedData(data);
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+        localStorage.setItem(cacheTimeKey, now.toString());
+        console.log('Fetched aggregated data and cached');
+      } catch (error) {
+        console.error('Error fetching aggregated data:', error);
+      }
+    }
+  };
+
+  fetchData();
+}, []);
+
 
   let voteData = {
     labels: ['BJP', 'Congress', 'AAP'],
