@@ -45,38 +45,58 @@ const ElectionDashboard = ({ party }) => {
     partyMapping[party] || { display: party, logo: "/images/default-logo.png" };
 
   // Fetch tweet data from the backend when the 'party' prop changes
- useEffect(() => {
-  const cacheKey = `election_analysis_shared`;
-  const cacheTimeKey = `${cacheKey}_time`;
   const cacheExpiry = 3 * 60 * 60 * 1000; // 3 hours
-  const now = Date.now();
 
+const getCachedData = (key) => {
+  const cacheKey = key;
+  const cacheTimeKey = `${key}_time`;
   const cachedData = localStorage.getItem(cacheKey);
   const cachedTime = localStorage.getItem(cacheTimeKey);
+  const now = Date.now();
 
   if (cachedData && cachedTime && (now - parseInt(cachedTime)) < cacheExpiry) {
-    const tweets = JSON.parse(cachedData);
-    setTweets(tweets);
-    setLoading(false);
-    console.log('Loaded from cache instantly');
-  } else {
-    setLoading(true); // only show loading if actually fetching
-    axios.get(`https://server-drab-five.vercel.app/election_analysis/${party}`)
-      .then((response) => {
-        const tweets = response.data.data.election_analysis;
-        setTweets(tweets);
-        localStorage.setItem(cacheKey, JSON.stringify(tweets));
-        localStorage.setItem(cacheTimeKey, now.toString());
-        console.log('Fetched and cached');
-      })
-      .catch((err) => {
-        setError(err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    return JSON.parse(cachedData);
   }
-}, []);
+  return null;
+};
+
+const setCachedData = (key, data) => {
+  const cacheKey = key;
+  const cacheTimeKey = `${key}_time`;
+  localStorage.setItem(cacheKey, JSON.stringify(data));
+  localStorage.setItem(cacheTimeKey, Date.now().toString());
+};
+
+ useEffect(() => {
+  const fetchData = async () => {
+    const key = `leader_analysis_data_${party}`;
+    const cached = getCachedData(key);
+
+    if (cached) {
+      setTweets(cached);
+      setLoading(false);
+      console.log('Used cached data');
+    } else {
+      try {
+        const response = await axios.get(
+          `https://server-drab-five.vercel.app/leader_analysis/${party}`
+        );
+        const tweets = response.data.data.leader_analysis;
+
+        setTweets(tweets);
+        setCachedData(key, tweets);
+        console.log('Fetched and cached');
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  fetchData();
+}, [party]);
+
 
   // if (loading) return <div>Loading dashboard data...</div>;
   // if (error) return <div>Error loading dashboard data: {error.message}</div>;
