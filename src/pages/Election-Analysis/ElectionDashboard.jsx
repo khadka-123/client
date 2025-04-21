@@ -47,7 +47,7 @@ const ElectionDashboard = ({ party }) => {
   // Fetch tweet data from the backend when the 'party' prop changes
   useEffect(() => {
   const fetchData = async () => {
-    const cacheKey = `election_analysis_${party}`;
+    const cacheKey = `election_analysis_shared`;
     const cacheTimeKey = `${cacheKey}_time`;
     const cacheExpiry = 3 * 60 * 60 * 1000; // 3 hours
 
