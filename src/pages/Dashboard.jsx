@@ -124,32 +124,43 @@ const Main = styled.main`
   flex-direction: column;
   align-items: center;
   margin-top: 6rem;
+  
 `;
-const FeatureGrid = styled.div`
+export const FeatureGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-  width: 100%;
-  max-width: 1200px;
-  margin-bottom: 4rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  margin: 0 auto 4rem;
+
   @media (min-width: 768px) {
-    grid-template-columns: repeat(2,1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 6rem;
   }
 `;
-const FeatureCardContainer = styled.div`
-  background-color: rgba(55,58,64,0.9);
+
+export const FeatureCardContainer = styled.div`
+  background-color: rgba(55, 58, 64, 0.9);
   border-radius: 8px;
   padding: 2rem;
-  transition: transform 0.3s;
-  width: 100%; max-width: 500px;
-  &:hover { cursor: pointer; transform: scale(1.03); }
+  margin: 10px;
+  height: 100%;
+  width: 600px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    cursor: pointer;
+    transform: scale(1.03);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
 `;
-const FeatureCardContent = styled.div`
+
+export const FeatureCardContent = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 100%;
 `;
+
 const FeatureTitle = styled.h3`
   font-size: 1.25rem;
   font-weight: 500;
