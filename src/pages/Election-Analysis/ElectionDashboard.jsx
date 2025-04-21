@@ -33,6 +33,11 @@ const ElectionDashboard = ({ party }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const cacheExpiry = 3 * 60 * 60 * 1000;  // 3 hours
+  const cacheKeyBase     = "election_analysis_data";
+  const cacheTimeKeyBase = "election_analysis_time";
+  
+
   // Mapping from backend party value to display values and logos
   const partyMapping = {
     BJP4India: { display: "BJP", logo: "/images/bjp-logo.jpg" },
@@ -45,9 +50,6 @@ const ElectionDashboard = ({ party }) => {
     partyMapping[party] || { display: party, logo: "/images/default-logo.png" };
 
   // Fetch tweet data from the backend when the 'party' prop changes
- 
-const cacheKeyBase = "election_analysis_data";
-const cacheTimeKeyBase = "election_analysis_time";
 
 useEffect(() => {
   // build per‐party keys
