@@ -45,7 +45,10 @@ const ElectionDashboard = ({ party }) => {
     partyMapping[party] || { display: party, logo: "/images/default-logo.png" };
 
   // Fetch tweet data from the backend when the 'party' prop changes
-  useEffect(() => {
+  const [allTweets, setAllTweets] = useState([]);
+const [filteredTweets, setFilteredTweets] = useState([]);
+
+useEffect(() => {
   const fetchData = async () => {
     const cacheKey = `election_analysis_shared`;
     const cacheTimeKey = `${cacheKey}_time`;
@@ -56,21 +59,19 @@ const ElectionDashboard = ({ party }) => {
     const now = Date.now();
 
     if (cachedData && cachedTime && (now - parseInt(cachedTime)) < cacheExpiry) {
-      const allTweets = JSON.parse(cachedData);
-      setTweets(allTweets);
-      setLoading(false);
-      console.log('Used shared cached data');
+      const tweets = JSON.parse(cachedData);
+      setAllTweets(tweets);
+      console.log('Used cached shared data');
     } else {
       try {
         const response = await axios.get(
-          `https://server-drab-five.vercel.app/election_analysis/${party}`
+          `https://server-drab-five.vercel.app/election_analysis/${party}` // party doesn't matter
         );
         const tweets = response.data.data.election_analysis;
-
-        setTweets(tweets);
+        setAllTweets(tweets);
         localStorage.setItem(cacheKey, JSON.stringify(tweets));
         localStorage.setItem(cacheTimeKey, now.toString());
-        console.log('Fetched shared data from server and cached');
+        console.log('Fetched and cached shared data');
       } catch (err) {
         setError(err);
       } finally {
@@ -80,7 +81,8 @@ const ElectionDashboard = ({ party }) => {
   };
 
   fetchData();
-}, [party]);
+}, []);
+
 
   // if (loading) return <div>Loading dashboard data...</div>;
   // if (error) return <div>Error loading dashboard data: {error.message}</div>;
