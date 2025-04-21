@@ -29,39 +29,52 @@ ChartJS.register(
   Legend
 );
 
+const CACHE_KEY_BASE = "election_analysis_data";
+
 const ElectionDashboard = ({ party }) => {
   const [dashboardData, setDashboardData] = useState(null);
-  // const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Mapping from backend party value to display values and logos
   const partyMapping = {
     BJP4India: { display: "BJP", logo: "/images/bjp-logo.jpg" },
     INCIndia: { display: "Congress", logo: "/images/congress-logo.png" },
     AamAadmiParty: { display: "AAP", logo: "/images/aap-logo.jpg" },
   };
+
   const partyInfo =
     partyMapping[party] || { display: party, logo: "/images/default-logo.png" };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          `https://server-drab-five.vercel.app/election_analysis/${party}`
-        );
-        setDashboardData(response.data.data);
-      } catch (err) {
-        setError(err);
-      } finally {
-        // setLoading(false);
-      }
-    };
-    fetchData();
+    const cacheKey = `${CACHE_KEY_BASE}_${party}`;
+    const cachedRaw = localStorage.getItem(cacheKey);
+    let parsed = null;
+    try {
+      parsed = JSON.parse(cachedRaw);
+    } catch {}
+    // Validate structure: must have aggregated fields
+    if (parsed && parsed.sentimentCounts && parsed.engagementData) {
+      setDashboardData(parsed);
+      console.log("Loaded dashboard data from localStorage");
+    } else {
+      const fetchData = async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/api/election_analysis/${party}`
+          );
+          const data = response.data.data;
+          setDashboardData(data);
+          localStorage.setItem(cacheKey, JSON.stringify(data));
+          console.log("Fetched dashboard data from server and cached");
+        } catch (err) {
+          setError(err);
+        }
+      };
+      fetchData();
+    }
   }, [party]);
 
-  // if (loading) return <div>Loading dashboard data...</div>;
-  // if (error) return <div>Error loading dashboard data: {error.message}</div>;
-  // if (!dashboardData) return <div>No data available</div>;
+  if (error) return <div>Error loading dashboard data: {error.message}</div>;
+  if (!dashboardData) return null;
 
   const {
     totalTweets,
@@ -93,36 +106,45 @@ const ElectionDashboard = ({ party }) => {
 
   const sentimentPieData = {
     labels: ["Positive", "Neutral", "Negative"],
-    datasets: [{
-      data: [sentimentCounts.positive, sentimentCounts.neutral, sentimentCounts.negative],
-      backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
-    }],
+    datasets: [
+      {
+        data: [
+          sentimentCounts.positive,
+          sentimentCounts.neutral,
+          sentimentCounts.negative,
+        ],
+        backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
+      },
+    ],
   };
 
   const verificationPieData = {
     labels: ["Verified", "Unverified"],
-    datasets: [{
-      data: [verificationCounts.verified, verificationCounts.unverified],
-      backgroundColor: ["#4CAF50", "#F44336"],
-    }],
+    datasets: [
+      {
+        data: [verificationCounts.verified, verificationCounts.unverified],
+        backgroundColor: ["#4CAF50", "#F44336"],
+      },
+    ],
   };
 
   const engagementBarData = {
-    labels: engagementData.map(item => item.metric),
-    datasets: [{
-      label: "Value",
-      data: engagementData.map(item => item.value),
-      backgroundColor: "#0892D0",
-    }],
+    labels: engagementData.map((item) => item.metric),
+    datasets: [
+      {
+        label: "Value",
+        data: engagementData.map((item) => item.value),
+        backgroundColor: "#0892D0",
+      },
+    ],
   };
 
-  // Restore original activity line colors
   const lineChartData = {
-    labels: timeSeriesData.map(item => item.date),
+    labels: timeSeriesData.map((item) => item.date),
     datasets: [
       {
         label: "Likes",
-        data: timeSeriesData.map(item => item.likes),
+        data: timeSeriesData.map((item) => item.likes),
         borderColor: "#1DA1F2",
         backgroundColor: "#1DA1F2",
         tension: 0.4,
@@ -130,7 +152,7 @@ const ElectionDashboard = ({ party }) => {
       },
       {
         label: "Tweets",
-        data: timeSeriesData.map(item => item.tweets),
+        data: timeSeriesData.map((item) => item.tweets),
         borderColor: "#657786",
         backgroundColor: "#657786",
         tension: 0.4,
@@ -138,7 +160,7 @@ const ElectionDashboard = ({ party }) => {
       },
       {
         label: "Retweets",
-        data: timeSeriesData.map(item => item.retweets),
+        data: timeSeriesData.map((item) => item.retweets),
         borderColor: "#17BF63",
         backgroundColor: "#17BF63",
         tension: 0.4,
@@ -153,7 +175,9 @@ const ElectionDashboard = ({ party }) => {
         <header className="dashboard-header">
           <div className="title">
             <h1>Twitter Analytics Dashboard</h1>
-            <p>Analysis for: <strong>{partyInfo.display}</strong></p>
+            <p>
+              Analysis for: <strong>{partyInfo.display}</strong>
+            </p>
           </div>
           <div className="party-info">
             <div className="party-badge">{partyInfo.display}</div>
