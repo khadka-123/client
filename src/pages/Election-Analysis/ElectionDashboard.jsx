@@ -31,7 +31,7 @@ ChartJS.register(
 
 const ElectionDashboard = ({ party }) => {
   const [dashboardData, setDashboardData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Mapping from backend party value to display values and logos
@@ -53,15 +53,15 @@ const ElectionDashboard = ({ party }) => {
       } catch (err) {
         setError(err);
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
     fetchData();
   }, [party]);
 
-  if (loading) return <div>Loading dashboard data...</div>;
-  if (error) return <div>Error loading dashboard data: {error.message}</div>;
-  if (!dashboardData) return <div>No data available</div>;
+  // if (loading) return <div>Loading dashboard data...</div>;
+  // if (error) return <div>Error loading dashboard data: {error.message}</div>;
+  // if (!dashboardData) return <div>No data available</div>;
 
   const {
     totalTweets,
