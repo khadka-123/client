@@ -46,23 +46,41 @@ const ElectionDashboard = ({ party }) => {
 
   // Fetch tweet data from the backend when the 'party' prop changes
   useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = async () => {
+    const cacheKey = `election_analysis_${party}`;
+    const cacheTimeKey = `${cacheKey}_time`;
+    const cacheExpiry = 3 * 60 * 60 * 1000; // 3 hours
+
+    const cachedData = localStorage.getItem(cacheKey);
+    const cachedTime = localStorage.getItem(cacheTimeKey);
+
+    const now = Date.now();
+
+    if (cachedData && cachedTime && (now - parseInt(cachedTime)) < cacheExpiry) {
+      setTweets(JSON.parse(cachedData));
+      setLoading(false);
+      console.log('Used cached data');
+    } else {
       try {
-        
         const response = await axios.get(
           `https://server-drab-five.vercel.app/election_analysis/${party}`
         );
-        console.log(response.data);
-        // Expecting the backend to return { success: true, data: { election_analysis: [ ... ] } }
-        setTweets(response.data.data.election_analysis);
+        const tweets = response.data.data.election_analysis;
+
+        setTweets(tweets);
+        localStorage.setItem(cacheKey, JSON.stringify(tweets));
+        localStorage.setItem(cacheTimeKey, now.toString());
+        console.log('Fetched from server and cached');
       } catch (err) {
         setError(err);
       } finally {
         setLoading(false);
       }
-    };
-    fetchData();
-  }, [party]);
+    }
+  };
+
+  fetchData();
+}, [party]);
 
   // if (loading) return <div>Loading dashboard data...</div>;
   // if (error) return <div>Error loading dashboard data: {error.message}</div>;
