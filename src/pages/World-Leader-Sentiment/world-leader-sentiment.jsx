@@ -30,41 +30,67 @@ const activeTab = location.pathname === '/election-analysis' ? 'analysis' : 'pre
 
 
     useEffect(() => {
-        axios.get('https://server-drab-five.vercel.app/leader_analysis')
-            .then((res) => {
-                console.log("API Response:", res.data);
+  const fetchData = async () => {
+    const cacheKey = 'leader_analysis_data';
+    const cacheTimeKey = `${cacheKey}_time`;
+    const cacheExpiry = 3 * 60 * 60 * 1000; // 3 hours
 
-                if (!res.data.success || !res.data.data) {
-                    console.error("Invalid API response format:", res.data);
-                    return;
-                }
+    const cachedData = localStorage.getItem(cacheKey);
+    const cachedTime = localStorage.getItem(cacheTimeKey);
+    const now = Date.now();
 
-                const leadersFromAPI = res.data.data;
+    if (cachedData && cachedTime && (now - parseInt(cachedTime)) < cacheExpiry) {
+      const leadersFromAPI = JSON.parse(cachedData);
+      processLeaderData(leadersFromAPI);
+      console.log('Used cached leader analysis data');
+    } else {
+      try {
+        const res = await axios.get('https://server-drab-five.vercel.app/leader_analysis');
+        console.log("API Response:", res.data);
 
-                const scoreMap = {};
-                const sentiment = {};
+        if (!res.data.success || !res.data.data) {
+          console.error("Invalid API response format:", res.data);
+          return;
+        }
 
-                leadersFromAPI.forEach((leader) => {
-                    scoreMap[leader.leader_name] = leader.score || 0;
+        const leadersFromAPI = res.data.data;
+        localStorage.setItem(cacheKey, JSON.stringify(leadersFromAPI));
+        localStorage.setItem(cacheTimeKey, now.toString());
 
-                    sentiment[leader.leader_name] = [
-                        leader.positive_tweets || 0,
-                        leader.neutral_tweets || 0,
-                        leader.negative_tweets || 0
-                    ];
-                });
+        processLeaderData(leadersFromAPI);
+        console.log('Fetched and cached leader analysis data');
+      } catch (err) {
+        console.error('Error fetching data:', err);
+      }
+    }
+  };
 
-                const scores = predefinedLeaders.map((name) => scoreMap[name] || 50); // Default score if missing
+  const processLeaderData = (leadersFromAPI) => {
+    const scoreMap = {};
+    const sentiment = {};
 
-                setLeaderData({
-                    top10: { names: predefinedLeaders, scores },
-                    sentiment
-                });
+    leadersFromAPI.forEach((leader) => {
+      scoreMap[leader.leader_name] = leader.score || 0;
+      sentiment[leader.leader_name] = [
+        leader.positive_tweets || 0,
+        leader.neutral_tweets || 0,
+        leader.negative_tweets || 0
+      ];
+    });
 
-                console.log("Processed Leader Data:", { names: predefinedLeaders, scores, sentiment });
-            })
-            .catch((err) => console.error('Error fetching data:', err));
-    }, []);
+    const scores = predefinedLeaders.map((name) => scoreMap[name] || 50);
+
+    setLeaderData({
+      top10: { names: predefinedLeaders, scores },
+      sentiment
+    });
+
+    console.log("Processed Leader Data:", { names: predefinedLeaders, scores, sentiment });
+  };
+
+  fetchData();
+}, []);
+
 
     return (
         <>
