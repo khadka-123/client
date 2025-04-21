@@ -74,7 +74,7 @@ const ElectionDashboard = ({ party }) => {
   }, [party]);
 
   if (error) return <div>Error loading dashboard data: {error.message}</div>;
-  // if (!dashboardData) return null;
+  if (!dashboardData) return null;
 
   const {
     totalTweets,
